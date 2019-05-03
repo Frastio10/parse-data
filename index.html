@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+	<style>
+		li{
+			vertical-align: middle;
+			align-items: center;
+		}
+
+		li h2{
+			margin-right: 20px;
+		}
+
+		li span{
+			font-size: 12px;
+			float: right;
+			margin-left: auto;
+			text-align: right;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div id="root" class="row"></div>
+	</div>
+	<ul class="list-group list-group-flush">
+	<template id="templates">
+  		<li class="list-group-item w-100 float-left d-flex">
+  			<h2 class="float-left"><score></h2>
+  			<news><span>By: <by></span>
+  		</li>
+	</template>
+	</ul>
+</body>
+<script>
+	var template = document.getElementById("templates").innerHTML;
+	var roots = document.getElementById("root");
+	let temp = "";
+	let itemd = "";
+	var ids = fetch('https://hacker-news.firebaseio.com/v0/topstories.json').then(async (result) => {
+		var ids = await result.json();
+		
+		ids.forEach(async(item, index)=>{
+
+				itemd = "https://hacker-news.firebaseio.com/v0/item/" + ids[index] +".json";
+
+				//console.log(title);
+
+				
+				var items = fetch(itemd).then(async(res) => {
+					var items = await res.json();
+					var title = items.title;
+					var url = items.url;
+					temp = temp + template
+					.replace('<news>',`<a href="${url}">${title}</a>`)
+					.replace('<score>',items.score)
+					.replace('<by>',items.by)
+					roots.innerHTML = temp;
+
+
+				});				
+		});		
+
+	});
+
+
+</script>
+</html>
