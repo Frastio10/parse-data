@@ -55,7 +55,7 @@
 					var title = items.title;
 					var url = items.url;
 					temp = temp + template
-					.replace('<news>',`<a href="${url}">${title}</a>`)
+					.replace('<news>',`<a href="${url}" target="_blank">${title}</a>`)
 					.replace('<score>',items.score)
 					.replace('<by>',items.by)
 					roots.innerHTML = temp;
