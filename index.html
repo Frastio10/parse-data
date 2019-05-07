@@ -24,8 +24,19 @@
 </head>
 <body>
 	<div class="container">
+		<div class="w-100 row justify-content-center clearfix mt-5 mb-5">
+			<ul class="pagination-sm pagination" id="paginator-top">
+					
+			</ul>
+		</div>
 		<div id="root" class="row"></div>
+		<div class="w-100 row justify-content-center clearfix mt-5">
+			<ul class="pagination-sm pagination" id="paginator">
+					
+			</ul>
+		</div>
 	</div>
+	
 	<ul class="list-group list-group-flush">
 	<template id="templates">
   		<li class="list-group-item w-100 float-left d-flex">
@@ -34,38 +45,59 @@
   		</li>
 	</template>
 	</ul>
+	<ul class="pagination">
+		<template id="pagination">
+	    	<li class="page-item page-{uri}"><a class="page-link" href="?page={uri}">{uri}</a></li>
+		</template>
+	</ul>	
 </body>
 <script>
-	var template = document.getElementById("templates").innerHTML;
 	var roots = document.getElementById("root");
 	let temp = "";
 	let itemd = "";
-	var ids = fetch('https://hacker-news.firebaseio.com/v0/topstories.json').then(async (result) => {
-		var ids = await result.json();
-		
-		ids.forEach(async(item, index)=>{
+	const template = document.getElementById("templates").innerHTML;
+	const paginator  =  document.getElementById("pagination").innerHTML;
+	const search = new URLSearchParams(window.location.search);
+	const limit = 15;
+	(async()=>{
+		fetch('https://hacker-news.firebaseio.com/v0/topstories.json').then(async (result, key) => {
+			var ids = await result.json();
+			var limiter = Math.ceil(ids.length / limit);
+			let paginate ="";
 
-				itemd = "https://hacker-news.firebaseio.com/v0/item/" + ids[index] +".json";
+			for (var i = 0; i < limiter; i++) {
+				paginate = paginate + paginator.split("{uri}").join(i+1);
+			}
 
-				//console.log(title);
-
-				
-				var items = fetch(itemd).then(async(res) => {
-					var items = await res.json();
-					var title = items.title;
-					var url = items.url;
-					temp = temp + template
-					.replace('<news>',`<a href="${url}" target="_blank">${title}</a>`)
-					.replace('<score>',items.score)
-					.replace('<by>',items.by)
-					roots.innerHTML = temp;
+			const page = search.get("page") ? search.get("page") : 1;
 
 
-				});				
-		});		
+			await document.getElementById("paginator").insertAdjacentHTML("beforeend",paginate);
+			await document.getElementById("paginator-top").insertAdjacentHTML("beforeend",paginate);
+			var nav = document.querySelectorAll(`.page-${page}`);
+			nav[0].classList.add("active");
+			nav[1].classList.add("active");
+			
+			ids.forEach(async(item, key)=>{
+				itemd = "https://hacker-news.firebaseio.com/v0/item/" + item +".json";
 
-	});
 
+				if(key >= ((page * limit) - limit) && key <= ((page) * limit))	{
+					fetch(itemd).then(async(res) => {
+						var items = await res.json();
+						var title = items.title;
+						var url = items.url;
+						temp = temp + template
+						.replace('<news>',`<a href="${url}" target="_blank">${title}</a>`)
+						.replace('<score>',items.score)
+						.replace('<by>',items.by)
+						roots.innerHTML = temp;
+						//roots.insertAdjacentHTML("beforeend",temp)
 
+					});
+				}
+			});
+		});
+	})()
 </script>
 </html>
